@@ -8,7 +8,8 @@ SKKU 2022 Artificial Intelligence Project Team 15
 
 [![——————————————————————————](https://raw.githubusercontent.com/andreasbm/readme/master/assets/lines/colored.png)](#license)
 
-#Output
+# Output
+
 ## Project Proposal (4/11)
 
 ## Data analysis / Visualization (5/2)
