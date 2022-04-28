@@ -11,10 +11,8 @@ SKKU 2022 Artificial Intelligence Project Team 15
 # Output
 
 ## Project Proposal (4/11)
-[REPORT](https://github.com/Dorika0203/proj_2022AI/doc/Project Proposal_REPORT(4:11).pdf)
->
-[PPT](https://github.com/Dorika0203/proj_2022AI/doc/Project Proposal_PPT(4:11).pdf)
->
+- [PPT](https://github.com/Dorika0203/proj_2022AI/doc/Project Proposal_PPT(4:11).pdf)
+- [REPORT](https://github.com/Dorika0203/proj_2022AI/doc/Project Proposal_REPORT(4:11).pdf)
 ## Data analysis / Visualization (5/2)
 
 ## Train data with the small data (5/9)
