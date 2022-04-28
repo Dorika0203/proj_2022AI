@@ -10,17 +10,19 @@ SKKU 2022 Artificial Intelligence Project Team 15
 
 # Output
 
-## Project Proposal (4/11)
+## (1) Project Proposal (4/11)
 - [PPT](https://github.com/Dorika0203/proj_2022AI/blob/8797cdc91a21bd6df0f4adefba8564e8569d476c/doc/Project%20Proposal_PPT(4:11).pdf)
 - [REPORT](https://github.com/Dorika0203/proj_2022AI/blob/8797cdc91a21bd6df0f4adefba8564e8569d476c/doc/Project%20Proposal_REPORT(4:11).pdf)
-## Data analysis / Visualization (5/2)
+## (2) Data analysis / Visualization (5/2)
 
-## Train data with the small data (5/9)
+## (3) Train data with the small data (5/9)
 
-## Train data with the full dataset (5/16)
+## (4) Train data with the full dataset (5/16)
 
-## Final Presentation (5/23)
+## (5) Final Presentation (5/23)
 
+
+# Reference
 
 ## ODE reference
 https://github.com/rtqichen/torchdiffeq
