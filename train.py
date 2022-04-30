@@ -6,24 +6,25 @@ import torch.nn as nn
 import torch
 from tqdm import tqdm
 
-IMAGE_ROOT = 'D:/dataset_car/kcar_preprocessed/kcar'
-BATCH_SIZE = 64
-LR = 0.001
-EPOCH = 10
-
-def train():
+def train(dataset_dir='D:/dataset_car/kcar_preprocessed/kcar', batch_size=64, lr=0.01, epoch=10, reorg=False):
+    IMAGE_ROOT = dataset_dir
+    BATCH_SIZE = batch_size
+    LR = lr
+    EPOCH = epoch
 
     gpu_flag = torch.cuda.is_available()
     device = torch.device("cuda" if gpu_flag else "cpu")
-    # device = torch.device("cpu")
-    print(device)
+    print("GPU INFO : ", torch.cuda.get_device_name(device))
 
-    # 한번만 실행하면 됨
-    dl.reorg_root(IMAGE_ROOT)
+    # 한번만 실행하면 됨. 경로 데이터셋 세팅해주는 것.
+    if reorg: 
+        dl.reorg_root(IMAGE_ROOT)
+    
     trainSet, testSet = dl.get_dataset(IMAGE_ROOT)
 
     train_dataloader = DataLoader(trainSet, batch_size=BATCH_SIZE, num_workers=1)
     test_dataloader = DataLoader(testSet, batch_size=BATCH_SIZE, num_workers=1)
+    print("DATA LOADING DONE.")
 
     model = nw.ResNet18(in_channels=3, labelNum=100)
     optim = torch.optim.Adam(model.parameters(), lr=LR)
@@ -71,7 +72,6 @@ def train():
         test_acc_arr.append(test_acc)
 
         print(f'epoch: {epoch}, train_loss: {train_loss}, test_loss: {test_loss}, acc: {test_acc}')
-        break
 
 if __name__ == '__main__':
     train()
