@@ -19,12 +19,12 @@ def train(dataset_dir='D:/dataset_car/kcar_preprocessed/kcar', batch_size=64, lr
     
     trainSet, testSet = dl.get_dataset(dataset_dir)
 
-    # 실험용, 데이터셋 1/10화. 나중에 주석처리.
-    trainSet, _ = random_split(dataset=trainSet, lengths=[len(trainSet)//10, len(trainSet)-(len(trainSet)//10)])
-    testSet, _ = random_split(dataset=testSet, lengths=[len(testSet)//10, len(testSet)-(len(testSet)//10)])
+    # 실험용, 데이터셋 1/10
+    # trainSet, _ = random_split(dataset=trainSet, lengths=[len(trainSet)//10, len(trainSet)-(len(trainSet)//10)])
+    # testSet, _ = random_split(dataset=testSet, lengths=[len(testSet)//10, len(testSet)-(len(testSet)//10)])
 
-    train_dataloader = DataLoader(trainSet, batch_size=batch_size, num_workers=1)
-    test_dataloader = DataLoader(testSet, batch_size=batch_size, num_workers=1)
+    train_dataloader = DataLoader(trainSet, batch_size=batch_size, num_workers=4)
+    test_dataloader = DataLoader(testSet, batch_size=batch_size, num_workers=4)
     
     print("DATA LOADING DONE.")
 
