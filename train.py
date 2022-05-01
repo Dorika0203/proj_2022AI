@@ -5,12 +5,9 @@ from torch.utils.data import DataLoader, Dataset
 import torch.nn as nn
 import torch
 from tqdm import tqdm
+from torch.utils.data import random_split
 
-def train(dataset_dir='D:/dataset_car/kcar_preprocessed/kcar', batch_size=64, lr=0.01, epoch=10, reorg=False):
-    IMAGE_ROOT = dataset_dir
-    BATCH_SIZE = batch_size
-    LR = lr
-    EPOCH = epoch
+def train(dataset_dir='D:/dataset_car/kcar_preprocessed/kcar', batch_size=64, lr=0.01, epoch=10, saveName = './', reorg=False):
 
     gpu_flag = torch.cuda.is_available()
     device = torch.device("cuda" if gpu_flag else "cpu")
@@ -18,24 +15,30 @@ def train(dataset_dir='D:/dataset_car/kcar_preprocessed/kcar', batch_size=64, lr
 
     # 한번만 실행하면 됨. 경로 데이터셋 세팅해주는 것.
     if reorg: 
-        dl.reorg_root(IMAGE_ROOT)
+        dl.reorg_root(dataset_dir)
     
-    trainSet, testSet = dl.get_dataset(IMAGE_ROOT)
+    trainSet, testSet = dl.get_dataset(dataset_dir)
 
-    train_dataloader = DataLoader(trainSet, batch_size=BATCH_SIZE, num_workers=1)
-    test_dataloader = DataLoader(testSet, batch_size=BATCH_SIZE, num_workers=1)
+    # 실험용, 데이터셋 1/10화. 나중에 주석처리.
+    trainSet, _ = random_split(dataset=trainSet, lengths=[len(trainSet)//10, len(trainSet)-(len(trainSet)//10)])
+    testSet, _ = random_split(dataset=testSet, lengths=[len(testSet)//10, len(testSet)-(len(testSet)//10)])
+
+    train_dataloader = DataLoader(trainSet, batch_size=batch_size, num_workers=1)
+    test_dataloader = DataLoader(testSet, batch_size=batch_size, num_workers=1)
+    
     print("DATA LOADING DONE.")
 
     model = nw.ResNet18(in_channels=3, labelNum=100)
-    optim = torch.optim.Adam(model.parameters(), lr=LR)
+    optim = torch.optim.Adam(model.parameters(), lr=lr)
     loss_func = nn.CrossEntropyLoss()
     
     train_loss_arr = []
     test_loss_arr = []
     test_acc_arr = []
+    best_test_acc = 0
 
     model.to(device)
-    for epoch in range(1, EPOCH+1):
+    for epoch in range(1, epoch+1):
         train_loss = 0
         test_loss = 0
         test_acc = 0
@@ -72,6 +75,10 @@ def train(dataset_dir='D:/dataset_car/kcar_preprocessed/kcar', batch_size=64, lr
         test_acc_arr.append(test_acc)
 
         print(f'epoch: {epoch}, train_loss: {train_loss}, test_loss: {test_loss}, acc: {test_acc}')
+        if test_acc > best_test_acc:
+            best_test_acc = test_acc
+            torch.save(model.state_dict(), saveName+f'_{epoch}.pt')
+            print(f'saved model of epoch {epoch} with new best test accuracy {best_test_acc}')
 
 if __name__ == '__main__':
-    train()
+    train(saveName='./result/R18')
