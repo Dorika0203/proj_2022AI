@@ -75,15 +75,6 @@ def split_dataset(dataset, ratio=(4,1)):
     d1, d2 = random_split(dataset=dataset, lengths=ratioList)
     return d1, d2
 
-# def split_dataset2(dataset, ratio=(4,1)):
-#     dlen = len(dataset)
-#     sum = ratio[0] + ratio[1]
-#     r2 = ratio[1]/sum
-#     l2 = round(dlen*r2)
-#     ratioList = [dlen-l2, l2]
-#     d1, d2 = random_split(dataset=dataset, lengths=ratioList)
-#     return d1, d2
-
 
 def visualize_filter(tensor, ch=0, allkernels=False, nrow=8, padding=1): 
   n,c,w,h = tensor.shape
