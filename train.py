@@ -182,8 +182,21 @@ def cross_validation(dataset, device, max_epoch, batch_size, lr, n_split=3, mode
     return loss_by_epoch
 
 
+"""
+Get loss matrix.
+N = max_epoch
+M = len(lr_list)
 
+return: matrix - shape(N,M)
+Each element in matrix[i][j] is corresponding to loss(epoch=i, lr=lr_list[j])
+Each element (loss) should be obtained from K-fold validations.
 
+for (fold):
+    for (lr):
+        for(epoch):
+"""
+def cross_validation2(dataset, device, max_epoch, batch_size, lr_list, n_split=3, modelType='resnet'):
+    return None
 
 
 
@@ -202,7 +215,7 @@ if __name__ == '__main__':
     EPOCH = 10
 
     # if dataset organiztion not done, perform utils.reorg_root()
-    # utils.reorg_root(DATASET_DIR)
+    utils.reorg_root(DATASET_DIR)
 
     # GET DEVICE AND CHECK.
     gpu_flag = torch.cuda.is_available()
@@ -214,7 +227,5 @@ if __name__ == '__main__':
     _, d_total = utils.split_dataset(d_total, (9,1))
     print("DATA LOADING DONE.")
 
-
-    cv_result = cross_validation(d_total, device=device, max_epoch=EPOCH, batch_size=BATCH_SIZE, lr=LEARNING_RATE, n_split=3)
-    plt.plot([i for i in range(len(cv_result))], cv_result)
+    
     
