@@ -4,6 +4,9 @@ import os
 import re
 import shutil
 import torchvision.transforms as tf
+import numpy as np
+from torchvision import utils as tvutil
+import matplotlib.pyplot as plt
 
 
 root_dir = 'D:/dataset_car/kcar_preprocessed/kcar'
@@ -61,7 +64,36 @@ def get_dataset(root_dir):
             tf.ToTensor(),
         ])
     )
+    return dataset
+
+def split_dataset(dataset, ratio=(4,1)):
     dlen = len(dataset)
-    ratioList = [dlen - (dlen//5), dlen//5]
-    train, test = random_split(dataset=dataset, lengths=ratioList)
-    return train, test
+    sum = ratio[0] + ratio[1]
+    r2 = ratio[1]/sum
+    l2 = round(dlen*r2)
+    ratioList = [dlen-l2, l2]
+    d1, d2 = random_split(dataset=dataset, lengths=ratioList)
+    return d1, d2
+
+# def split_dataset2(dataset, ratio=(4,1)):
+#     dlen = len(dataset)
+#     sum = ratio[0] + ratio[1]
+#     r2 = ratio[1]/sum
+#     l2 = round(dlen*r2)
+#     ratioList = [dlen-l2, l2]
+#     d1, d2 = random_split(dataset=dataset, lengths=ratioList)
+#     return d1, d2
+
+
+def visualize_filter(tensor, ch=0, allkernels=False, nrow=8, padding=1): 
+  n,c,w,h = tensor.shape
+
+  if allkernels: 
+    tensor = tensor.view(n*c, -1, w, h)
+  elif c != 3: 
+    tensor = tensor[:,ch,:,:].unsqueeze(dim=1)
+    
+  rows = np.min((tensor.shape[0] // nrow + 1, 64))    
+  grid = tvutil.make_grid(tensor, nrow=nrow, normalize=True, padding=padding)
+  plt.figure( figsize=(nrow,rows) )
+  plt.imshow(grid.numpy().transpose((1, 2, 0)))

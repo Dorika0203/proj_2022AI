@@ -1,47 +1,66 @@
-import dloader as dl
+import utils as utils
 import network as nw
-import numpy as np
-from torch.utils.data import DataLoader, Dataset
+from torch.utils.data import DataLoader, SubsetRandomSampler
 import torch.nn as nn
 import torch
 from tqdm import tqdm
-from torch.utils.data import random_split
+from sklearn.model_selection import KFold
+import matplotlib.pyplot as plt
+import numpy as np
 
-def train(dataset_dir='D:/dataset_car/kcar_preprocessed/kcar', batch_size=64, lr=0.01, epoch=10, saveName = './', reorg=False):
 
-    gpu_flag = torch.cuda.is_available()
-    device = torch.device("cuda" if gpu_flag else "cpu")
-    print("GPU INFO : ", torch.cuda.get_device_name(device))
-
-    # 한번만 실행하면 됨. 경로 데이터셋 세팅해주는 것.
-    if reorg: 
-        dl.reorg_root(dataset_dir)
+def prediction(dataset, model, device, batch_size):
+    model.to(device)
+    dataloader = DataLoader(dataset, batch_size=batch_size, num_workers=4)
+    pred_list = []
+    for i, (x,y) in enumerate(tqdm(dataloader)):
+        model.eval()
+        x, y = x.to(device), y.to(device)
+        pred = model(x)
+        pred_list.append(pred)
     
-    trainSet, testSet = dl.get_dataset(dataset_dir)
+    ret_pred = None
+    for pred in pred_list:
+        if ret_pred is None:
+            ret_pred = pred
+        else:
+            ret_pred = torch.cat(ret_pred, pred)
 
-    # 실험용, 데이터셋 1/10
-    # trainSet, _ = random_split(dataset=trainSet, lengths=[len(trainSet)//10, len(trainSet)-(len(trainSet)//10)])
-    # testSet, _ = random_split(dataset=testSet, lengths=[len(testSet)//10, len(testSet)-(len(testSet)//10)])
+    return ret_pred
 
-    train_dataloader = DataLoader(trainSet, batch_size=batch_size, num_workers=4)
-    test_dataloader = DataLoader(testSet, batch_size=batch_size, num_workers=4)
-    
-    print("DATA LOADING DONE.")
 
-    model = nw.ResNet18(in_channels=3, labelNum=100)
-    optim = torch.optim.Adam(model.parameters(), lr=lr)
-    loss_func = nn.CrossEntropyLoss()
-    
+
+
+
+
+def train(dataset, device, max_epoch, batch_size, lr, modelType='resnet', save_dir = './result/'):
     train_loss_arr = []
     test_loss_arr = []
     test_acc_arr = []
-    best_test_acc = 0
+    train_dataset, test_dataset = utils.split_dataset(dataset, (4,1))
 
+    train_dataloader = DataLoader(train_dataset, batch_size=batch_size, num_workers=4)
+    test_dataloader = DataLoader(test_dataset, batch_size=batch_size,  num_workers=4)
+
+
+    if modelType == 'resnet':
+        model = nw.ResNet18(in_channels=3, labelNum=100)
+    elif modelType == 'm1':
+        model = nw.Model_1(in_channels=3, labelNum=100)
+    elif modelType == 'm2':
+        model = nw.Model_2(in_channels=3, labelNum=100)
+    else:
+        raise ValueError
+
+    optim = torch.optim.Adam(model.parameters(), lr=lr)
+    loss_func = nn.CrossEntropyLoss()
     model.to(device)
-    for epoch in range(1, epoch+1):
+
+    for epoch in range(1, max_epoch+1):
         train_loss = 0
         test_loss = 0
         test_acc = 0
+
         for i, (x,y) in enumerate(tqdm(train_dataloader)):
             model.train()
             x, y = x.to(device), y.to(device)
@@ -53,7 +72,10 @@ def train(dataset_dir='D:/dataset_car/kcar_preprocessed/kcar', batch_size=64, lr
 
             loss.backward()
             optim.step()
-            # break
+
+            x.detach()
+            y.detach()
+            pred.detach()
         
         for i, (x,y) in enumerate(test_dataloader):
             model.eval()
@@ -65,20 +87,134 @@ def train(dataset_dir='D:/dataset_car/kcar_preprocessed/kcar', batch_size=64, lr
 
             check = torch.argmax(pred, dim=1) == y
             test_acc += check.float().mean()
-            # break
+
+            x.detach()
+            y.detach()
+            pred.detach()
 
         train_loss = train_loss / len(train_dataloader)
         test_loss = test_loss / len(test_dataloader)
         test_acc = test_acc/len(test_dataloader)
+        test_acc.cpu()
+
         train_loss_arr.append(train_loss)
         test_loss_arr.append(test_loss)
         test_acc_arr.append(test_acc)
 
-        print(f'epoch: {epoch}, train_loss: {train_loss}, test_loss: {test_loss}, acc: {test_acc}')
-        if test_acc > best_test_acc:
-            best_test_acc = test_acc
-            torch.save(model.state_dict(), saveName+f'_{epoch}.pt')
-            print(f'saved model of epoch {epoch} with new best test accuracy {best_test_acc}')
+        print(f'epoch: {epoch}, train_loss: {train_loss}, test_loss: {test_loss}')
+        torch.save(model.state_dict(), save_dir+f'_{epoch}.pt')
+
+    model.cpu()
+    return model, train_loss_arr, test_loss_arr, test_acc_arr
+
+
+
+
+
+def cross_validation(dataset, device, max_epoch, batch_size, lr, n_split=3, modelType='resnet'):
+
+    # TRAINING WITH K_FOLD VALIDATION.
+    # FINDING PARAMETER : EPOCH, LR
+    kfold = KFold(n_splits=n_split, shuffle=True)
+    loss_by_epoch = np.zeros(max_epoch)
+
+    for fold,(train_idx,test_idx) in enumerate(kfold.split(dataset)):
+        print('--------------------------- fold number {} -------------------------------'.format(fold))
+        train_subsampler = SubsetRandomSampler(train_idx)
+        test_subsampler = SubsetRandomSampler(test_idx)
+
+        train_dataloader = DataLoader(dataset, batch_size=batch_size, sampler=train_subsampler, num_workers=4)
+        test_dataloader = DataLoader(dataset, batch_size=batch_size, sampler=test_subsampler, num_workers=4)
+
+        if modelType == 'resnet':
+            model = nw.ResNet18(in_channels=3, labelNum=100)
+        elif modelType == 'm1':
+            model = nw.Model_1(in_channels=3, labelNum=100)
+        elif modelType == 'm2':
+            model = nw.Model_2(in_channels=3, labelNum=100)
+        else:
+            raise ValueError
+
+        optim = torch.optim.Adam(model.parameters(), lr=lr)
+        loss_func = nn.CrossEntropyLoss()
+        model.to(device)
+
+        one_fold_loss = []
+        for epoch in range(1, max_epoch + 1): 
+            train_loss = 0
+            test_loss = 0
+            for i, (x,y) in enumerate(tqdm(train_dataloader)):
+                model.train()
+                x, y = x.to(device), y.to(device)
+                optim.zero_grad()
+                pred = model(x)
+
+                loss = loss_func(pred, y)
+                train_loss += loss.item()
+
+                loss.backward()
+                optim.step()
+
+                x.detach()
+                y.detach()
+                pred.detach()
+
+            train_loss = train_loss / len(train_dataloader)
+
+            for i, (x,y) in enumerate(tqdm(test_dataloader)):
+                model.eval()
+                x, y = x.to(device), y.to(device)
+                pred = model(x)
+                loss = loss_func(pred, y)
+                test_loss += loss.item()
+
+                x.detach()
+                y.detach()
+                pred.detach()
+            
+            one_fold_loss.append(test_loss)
+        model.cpu()
+        one_fold_loss = np.array(one_fold_loss)/len(test_dataloader)
+        print(one_fold_loss)
+        loss_by_epoch += one_fold_loss
+    
+    loss_by_epoch = loss_by_epoch/n_split
+    return loss_by_epoch
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 if __name__ == '__main__':
-    train(saveName='./result/R18')
+
+    DATASET_DIR = 'D:/dataset_car/kcar_preprocessed/kcar'
+    BATCH_SIZE = 16
+    LEARNING_RATE = 0.01
+    EPOCH = 10
+
+    # if dataset organiztion not done, perform utils.reorg_root()
+    # utils.reorg_root(DATASET_DIR)
+
+    # GET DEVICE AND CHECK.
+    gpu_flag = torch.cuda.is_available()
+    device = torch.device("cuda" if gpu_flag else "cpu")
+    print("GPU INFO : ", torch.cuda.get_device_name(device))
+
+    # LOAD DATASET
+    d_total = utils.get_dataset(DATASET_DIR)
+    _, d_total = utils.split_dataset(d_total, (9,1))
+    print("DATA LOADING DONE.")
+
+
+    cv_result = cross_validation(d_total, device=device, max_epoch=EPOCH, batch_size=BATCH_SIZE, lr=LEARNING_RATE, n_split=3)
+    plt.plot([i for i in range(len(cv_result))], cv_result)
+    
