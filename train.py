@@ -108,6 +108,23 @@ def train(dataset, device, max_epoch, batch_size, lr, modelType='resnet', save_d
     return model, train_loss_arr, test_loss_arr, test_acc_arr
 
 
+"""
+[return value]
+- train_loss_arr: same as train()
+- test_loss_arr: same as train()
+- test_acc_arr: same as train()
+- f1_score_arr: matrix - shape (max_epoch, 100)
+
+each matrix[i][j] is f1_score for epoch=i, class=j
+
+"""
+def train2(dataset, device, max_epoch, batch_size, lr, modelType='resnet', save_dir = './result/'):
+    train_loss_arr = []
+    test_loss_arr = []
+    test_acc_arr = []
+    f1_score_arr = []
+    
+    return train_loss_arr, test_loss_arr, test_acc_arr, f1_score_arr
 
 
 
