@@ -5,8 +5,8 @@ import torch.nn as nn
 import torch
 from tqdm import tqdm
 from sklearn.model_selection import KFold
-import matplotlib.pyplot as plt
 import numpy as np
+import os
 
 
 def prediction(dataset, model, device, batch_size):
@@ -56,6 +56,8 @@ def train(dataset, device, max_epoch, batch_size, lr, modelType='resnet', save_d
     loss_func = nn.CrossEntropyLoss()
     model.to(device)
 
+    min_test_loss = np.inf
+
     for epoch in range(1, max_epoch+1):
         train_loss = 0
         test_loss = 0
@@ -102,9 +104,14 @@ def train(dataset, device, max_epoch, batch_size, lr, modelType='resnet', save_d
         test_acc_arr.append(test_acc)
 
         print(f'epoch: {epoch}, train_loss: {train_loss}, test_loss: {test_loss}')
-        torch.save(model.state_dict(), save_dir+f'_{epoch}.pt')
+        if test_loss < min_test_loss:
+            min_test_loss = test_loss
+            torch.save(model.state_dict(), save_dir+f'_{epoch}.pt')
 
     model.cpu()
+    np.save(file=save_dir+f'train_loss.npy', arr=np.array(train_loss_arr), allow_pickle=True)
+    np.save(file=save_dir+f'test_loss.npy', arr=np.array(test_loss_arr), allow_pickle=True)
+    np.save(file=save_dir+f'test_acc.npy', arr=np.array(test_acc_arr), allow_pickle=True)
     return model, train_loss_arr, test_loss_arr, test_acc_arr
 
 
@@ -217,19 +224,13 @@ def cross_validation2(dataset, device, max_epoch, batch_size, lr_list, n_split=3
 
 
 
-
-
-
-
-
-
-
 if __name__ == '__main__':
 
     DATASET_DIR = 'D:/dataset_car/kcar_preprocessed/kcar'
     BATCH_SIZE = 16
-    LEARNING_RATE = 0.01
+    LEARNING_RATE = 0.001
     EPOCH = 10
+    SAVE_DIR = './result/'
 
     # if dataset organiztion not done, perform utils.reorg_root()
     utils.reorg_root(DATASET_DIR)
@@ -239,10 +240,45 @@ if __name__ == '__main__':
     device = torch.device("cuda" if gpu_flag else "cpu")
     print("GPU INFO : ", torch.cuda.get_device_name(device))
 
-    # LOAD DATASET
-    d_total = utils.get_dataset(DATASET_DIR)
-    _, d_total = utils.split_dataset(d_total, (9,1))
-    print("DATA LOADING DONE.")
 
+    # RESNET
+    EPOCH = 50
+    BATCH_SIZE=16
+    LEARNING_RATE=0.001
+    SAVE_DIR = './result/resnet/'
+    d_total = utils.get_dataset(DATASET_DIR)
+    if not os.path.isdir(SAVE_DIR):
+        os.mkdir(SAVE_DIR)
+
+    last_model, train_loss_arr, test_loss_arr, test_acc_arr = train(
+        dataset=d_total,
+        device=device,
+        max_epoch=EPOCH,
+        batch_size=BATCH_SIZE,
+        lr=LEARNING_RATE,
+        modelType='resnet',
+        save_dir=SAVE_DIR
+    )
+
+
+    # # MODEL1
+    # EPOCH = 50
+    # BATCH_SIZE=16
+    # LEARNING_RATE=0.001
+    # SAVE_DIR = './result/model_1/'
+    # d_total = utils.get_dataset(DATASET_DIR)
+
+    # if not os.path.isdir(SAVE_DIR):
+    #     os.mkdir(SAVE_DIR)
+
+    # last_model, train_loss_arr, test_loss_arr, test_acc_arr = train(
+    #     dataset=d_total,
+    #     device=device,
+    #     max_epoch=EPOCH,
+    #     batch_size=BATCH_SIZE,
+    #     lr=LEARNING_RATE,
+    #     modelType='m1',
+    #     save_dir=SAVE_DIR
+    # )
     
     
