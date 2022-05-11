@@ -97,7 +97,7 @@ def train(dataset, device, max_epoch, batch_size, lr, modelType='resnet', save_d
         train_loss = train_loss / len(train_dataloader)
         test_loss = test_loss / len(test_dataloader)
         test_acc = test_acc/len(test_dataloader)
-        test_acc.cpu()
+        test_acc = torch.Tensor.cpu(test_acc)
 
         train_loss_arr.append(train_loss)
         test_loss_arr.append(test_loss)
@@ -241,12 +241,33 @@ if __name__ == '__main__':
     print("GPU INFO : ", torch.cuda.get_device_name(device))
 
 
-    # RESNET
+    # # RESNET
+    # EPOCH = 50
+    # BATCH_SIZE=16
+    # LEARNING_RATE=0.001
+    # SAVE_DIR = './result/resnet/'
+    # d_total = utils.get_dataset(DATASET_DIR)
+    # if not os.path.isdir(SAVE_DIR):
+    #     os.mkdir(SAVE_DIR)
+
+    # last_model, train_loss_arr, test_loss_arr, test_acc_arr = train(
+    #     dataset=d_total,
+    #     device=device,
+    #     max_epoch=EPOCH,
+    #     batch_size=BATCH_SIZE,
+    #     lr=LEARNING_RATE,
+    #     modelType='resnet',
+    #     save_dir=SAVE_DIR
+    # )
+
+
+    # MODEL1
     EPOCH = 50
     BATCH_SIZE=16
     LEARNING_RATE=0.001
-    SAVE_DIR = './result/resnet/'
+    SAVE_DIR = './result/model_1/'
     d_total = utils.get_dataset(DATASET_DIR)
+
     if not os.path.isdir(SAVE_DIR):
         os.mkdir(SAVE_DIR)
 
@@ -256,17 +277,17 @@ if __name__ == '__main__':
         max_epoch=EPOCH,
         batch_size=BATCH_SIZE,
         lr=LEARNING_RATE,
-        modelType='resnet',
+        modelType='m1',
         save_dir=SAVE_DIR
     )
-
-
-    # # MODEL1
+    
+    # # MODEL2
     # EPOCH = 50
     # BATCH_SIZE=16
     # LEARNING_RATE=0.001
-    # SAVE_DIR = './result/model_1/'
+    # SAVE_DIR = './result/model_2/'
     # d_total = utils.get_dataset(DATASET_DIR)
+    # # _, d_total = utils.split_dataset(d_total, (49,1))
 
     # if not os.path.isdir(SAVE_DIR):
     #     os.mkdir(SAVE_DIR)
@@ -277,8 +298,6 @@ if __name__ == '__main__':
     #     max_epoch=EPOCH,
     #     batch_size=BATCH_SIZE,
     #     lr=LEARNING_RATE,
-    #     modelType='m1',
+    #     modelType='m2',
     #     save_dir=SAVE_DIR
     # )
-    
-    
