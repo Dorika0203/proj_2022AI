@@ -135,7 +135,7 @@ def train2(dataset, device, max_epoch, batch_size, lr, modelType='resnet', save_
 
 
 
-def cross_validation(dataset, device, max_epoch, batch_size, lr, n_split=3, modelType='resnet'):
+def cross_validation(dataset, device, max_epoch, batch_size, lr, n_split=3, modelType='resnet', save_dir='./result/'):
 
     # TRAINING WITH K_FOLD VALIDATION.
     # FINDING PARAMETER : EPOCH, LR
@@ -199,10 +199,11 @@ def cross_validation(dataset, device, max_epoch, batch_size, lr, n_split=3, mode
             one_fold_loss.append(test_loss)
         model.cpu()
         one_fold_loss = np.array(one_fold_loss)/len(test_dataloader)
-        print(one_fold_loss)
+        # print(one_fold_loss)
         loss_by_epoch += one_fold_loss
     
     loss_by_epoch = loss_by_epoch/n_split
+    np.save(save_dir+'cv_loss_epoch.npy', loss_by_epoch)
     return loss_by_epoch
 
 
@@ -241,6 +242,13 @@ if __name__ == '__main__':
     print("GPU INFO : ", torch.cuda.get_device_name(device))
 
 
+
+
+    """
+    Training
+    """
+
+
     # # RESNET
     # EPOCH = 50
     # BATCH_SIZE=16
@@ -261,25 +269,93 @@ if __name__ == '__main__':
     # )
 
 
-    # MODEL1
-    EPOCH = 50
+    # # MODEL1
+    # EPOCH = 50
+    # BATCH_SIZE=16
+    # LEARNING_RATE=0.001
+    # SAVE_DIR = './result/model_1/'
+    # d_total = utils.get_dataset(DATASET_DIR)
+
+    # if not os.path.isdir(SAVE_DIR):
+    #     os.mkdir(SAVE_DIR)
+
+    # last_model, train_loss_arr, test_loss_arr, test_acc_arr = train(
+    #     dataset=d_total,
+    #     device=device,
+    #     max_epoch=EPOCH,
+    #     batch_size=BATCH_SIZE,
+    #     lr=LEARNING_RATE,
+    #     modelType='m1',
+    #     save_dir=SAVE_DIR
+    # )
+    
+    # # MODEL2
+    # EPOCH = 50
+    # BATCH_SIZE=16
+    # LEARNING_RATE=0.001
+    # SAVE_DIR = './result/model_2/'
+    # d_total = utils.get_dataset(DATASET_DIR)
+    # # _, d_total = utils.split_dataset(d_total, (49,1))
+
+    # if not os.path.isdir(SAVE_DIR):
+    #     os.mkdir(SAVE_DIR)
+
+    # last_model, train_loss_arr, test_loss_arr, test_acc_arr = train(
+    #     dataset=d_total,
+    #     device=device,
+    #     max_epoch=EPOCH,
+    #     batch_size=BATCH_SIZE,
+    #     lr=LEARNING_RATE,
+    #     modelType='m2',
+    #     save_dir=SAVE_DIR
+    # )
+
+
+
+    """
+    Cross validation for epoch
+    """
+
+    # RESNET
+    EPOCH = 30
     BATCH_SIZE=16
     LEARNING_RATE=0.001
-    SAVE_DIR = './result/model_1/'
+    SAVE_DIR = './result/resnet/'
     d_total = utils.get_dataset(DATASET_DIR)
-
     if not os.path.isdir(SAVE_DIR):
         os.mkdir(SAVE_DIR)
-
-    last_model, train_loss_arr, test_loss_arr, test_acc_arr = train(
+    
+    cross_validation(
         dataset=d_total,
         device=device,
         max_epoch=EPOCH,
         batch_size=BATCH_SIZE,
         lr=LEARNING_RATE,
-        modelType='m1',
+        n_split=3,
+        modelType='resnet',
         save_dir=SAVE_DIR
     )
+
+
+    # # MODEL1
+    # EPOCH = 50
+    # BATCH_SIZE=16
+    # LEARNING_RATE=0.001
+    # SAVE_DIR = './result/model_1/'
+    # d_total = utils.get_dataset(DATASET_DIR)
+
+    # if not os.path.isdir(SAVE_DIR):
+    #     os.mkdir(SAVE_DIR)
+
+    # last_model, train_loss_arr, test_loss_arr, test_acc_arr = train(
+    #     dataset=d_total,
+    #     device=device,
+    #     max_epoch=EPOCH,
+    #     batch_size=BATCH_SIZE,
+    #     lr=LEARNING_RATE,
+    #     modelType='m1',
+    #     save_dir=SAVE_DIR
+    # )
     
     # # MODEL2
     # EPOCH = 50
