@@ -1,4 +1,5 @@
-from torch.utils.data import random_split
+from torch.utils.data import Subset
+from sklearn.model_selection import train_test_split
 import torchvision.datasets as ds
 import os
 import re
@@ -6,7 +7,7 @@ import shutil
 import torchvision.transforms as tf
 
 
-root_dir = 'D:/dataset_car/kcar_preprocessed/kcar'
+root_dir = 'C:/Users/Jaehyun/Downloads/kcar_preprocessed/kcar_preprocessed/kcar'
 
 def reorg_root(root):
 
@@ -46,13 +47,14 @@ def reorg_root(root):
         except FileExistsError as e:
             pass
         
-        for file in files:
+        for i, file in enumerate(files):
+            if i > (len(files) * 0.3):    break
             shutil.move(curdir+'/'+file, root+'/'+className+'/'+file)
-        os.rmdir(curdir)
+        shutil.rmtree(curdir)
 
-            
 
 def get_dataset(root_dir):
+
     dataset = ds.ImageFolder(
         root=root_dir,
         transform=tf.Compose([
@@ -61,7 +63,9 @@ def get_dataset(root_dir):
             tf.ToTensor(),
         ])
     )
-    dlen = len(dataset)
-    ratioList = [dlen - (dlen//5), dlen//5]
-    train, test = random_split(dataset=dataset, lengths=ratioList)
+    trainIdx, testIdx = train_test_split(dataset.targets, test_size = 0.2, random_state = 42, stratify=dataset.targets)
+    train = Subset(dataset, trainIdx)
+    test = Subset(dataset, testIdx)
+
+
     return train, test
