@@ -316,11 +316,32 @@ if __name__ == '__main__':
     Cross validation for epoch
     """
 
-    # RESNET
+    # # RESNET
+    # EPOCH = 30
+    # BATCH_SIZE=16
+    # LEARNING_RATE=0.001
+    # SAVE_DIR = './result/resnet/'
+    # d_total = utils.get_dataset(DATASET_DIR)
+    # if not os.path.isdir(SAVE_DIR):
+    #     os.mkdir(SAVE_DIR)
+    
+    # cross_validation(
+    #     dataset=d_total,
+    #     device=device,
+    #     max_epoch=EPOCH,
+    #     batch_size=BATCH_SIZE,
+    #     lr=LEARNING_RATE,
+    #     n_split=3,
+    #     modelType='resnet',
+    #     save_dir=SAVE_DIR
+    # )
+
+
+    # MODEL_1
     EPOCH = 30
     BATCH_SIZE=16
     LEARNING_RATE=0.001
-    SAVE_DIR = './result/resnet/'
+    SAVE_DIR = './result/model_1/'
     d_total = utils.get_dataset(DATASET_DIR)
     if not os.path.isdir(SAVE_DIR):
         os.mkdir(SAVE_DIR)
@@ -332,48 +353,26 @@ if __name__ == '__main__':
         batch_size=BATCH_SIZE,
         lr=LEARNING_RATE,
         n_split=3,
-        modelType='resnet',
+        modelType='m1',
         save_dir=SAVE_DIR
     )
 
-
-    # # MODEL1
-    # EPOCH = 50
-    # BATCH_SIZE=16
-    # LEARNING_RATE=0.001
-    # SAVE_DIR = './result/model_1/'
-    # d_total = utils.get_dataset(DATASET_DIR)
-
-    # if not os.path.isdir(SAVE_DIR):
-    #     os.mkdir(SAVE_DIR)
-
-    # last_model, train_loss_arr, test_loss_arr, test_acc_arr = train(
-    #     dataset=d_total,
-    #     device=device,
-    #     max_epoch=EPOCH,
-    #     batch_size=BATCH_SIZE,
-    #     lr=LEARNING_RATE,
-    #     modelType='m1',
-    #     save_dir=SAVE_DIR
-    # )
-    
-    # # MODEL2
-    # EPOCH = 50
+    # # MODEL_2
+    # EPOCH = 30
     # BATCH_SIZE=16
     # LEARNING_RATE=0.001
     # SAVE_DIR = './result/model_2/'
     # d_total = utils.get_dataset(DATASET_DIR)
-    # # _, d_total = utils.split_dataset(d_total, (49,1))
-
     # if not os.path.isdir(SAVE_DIR):
     #     os.mkdir(SAVE_DIR)
-
-    # last_model, train_loss_arr, test_loss_arr, test_acc_arr = train(
+    
+    # cross_validation(
     #     dataset=d_total,
     #     device=device,
     #     max_epoch=EPOCH,
     #     batch_size=BATCH_SIZE,
     #     lr=LEARNING_RATE,
+    #     n_split=3,
     #     modelType='m2',
     #     save_dir=SAVE_DIR
     # )

@@ -91,4 +91,3 @@ def visualize_filter(tensor, ch=0, allkernels=False, nrow=8, padding=1):
   grid = tvutil.make_grid(tensor, nrow=nrow, normalize=True, padding=padding)
   plt.figure( figsize=(nrow,rows) )
   plt.imshow(grid.numpy().transpose((1, 2, 0)))
->>>>>>> e887e19e1cc4821042c52965455299b154153356:utils.py
