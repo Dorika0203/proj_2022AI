@@ -337,31 +337,11 @@ if __name__ == '__main__':
     # )
 
 
-    # MODEL_1
-    EPOCH = 30
-    BATCH_SIZE=16
-    LEARNING_RATE=0.001
-    SAVE_DIR = './result/model_1/'
-    d_total = utils.get_dataset(DATASET_DIR)
-    if not os.path.isdir(SAVE_DIR):
-        os.mkdir(SAVE_DIR)
-    
-    cross_validation(
-        dataset=d_total,
-        device=device,
-        max_epoch=EPOCH,
-        batch_size=BATCH_SIZE,
-        lr=LEARNING_RATE,
-        n_split=3,
-        modelType='m1',
-        save_dir=SAVE_DIR
-    )
-
-    # # MODEL_2
+    # # MODEL_1
     # EPOCH = 30
     # BATCH_SIZE=16
     # LEARNING_RATE=0.001
-    # SAVE_DIR = './result/model_2/'
+    # SAVE_DIR = './result/model_1/'
     # d_total = utils.get_dataset(DATASET_DIR)
     # if not os.path.isdir(SAVE_DIR):
     #     os.mkdir(SAVE_DIR)
@@ -373,6 +353,26 @@ if __name__ == '__main__':
     #     batch_size=BATCH_SIZE,
     #     lr=LEARNING_RATE,
     #     n_split=3,
-    #     modelType='m2',
+    #     modelType='m1',
     #     save_dir=SAVE_DIR
     # )
+
+    # MODEL_2
+    EPOCH = 30
+    BATCH_SIZE=16
+    LEARNING_RATE=0.001
+    SAVE_DIR = './result/model_2/'
+    d_total = utils.get_dataset(DATASET_DIR)
+    if not os.path.isdir(SAVE_DIR):
+        os.mkdir(SAVE_DIR)
+    
+    cross_validation(
+        dataset=d_total,
+        device=device,
+        max_epoch=EPOCH,
+        batch_size=BATCH_SIZE,
+        lr=LEARNING_RATE,
+        n_split=3,
+        modelType='m2',
+        save_dir=SAVE_DIR
+    )
