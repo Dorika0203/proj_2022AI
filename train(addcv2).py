@@ -454,7 +454,7 @@ if __name__ == '__main__':
     EPOCH = 30
     BATCH_SIZE=16
     LEARNING_RATE=[0.001, 0.003, 0.01]
-    SAVE_DIR = '/home/dhlee/Research/assignments/쿠_220513/alt/'
+    SAVE_DIR = '/path/'
     d_total = utils.get_dataset(DATASET_DIR)
     if not os.path.isdir(SAVE_DIR):
         os.mkdir(SAVE_DIR)
