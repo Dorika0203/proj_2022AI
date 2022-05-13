@@ -220,9 +220,80 @@ for (fold):
     for (lr):
         for(epoch):
 """
-def cross_validation2(dataset, device, max_epoch, batch_size, lr_list, n_split=3, modelType='resnet'):
-    return None
+def cross_validation2(dataset, device, max_epoch, batch_size, lr_list, n_split=3, modelType='resnet', save_dir='./result/'):
 
+    # TRAINING WITH K_FOLD VALIDATION.
+    # FINDING PARAMETER : EPOCH, LR
+    kfold = KFold(n_splits=n_split, shuffle=True)    
+
+    for i in range(len(lr_list)):
+        loss_by_epoch = np.zeros(max_epoch)    
+        lr = lr_list[i]
+
+        for fold,(train_idx,test_idx) in enumerate(kfold.split(dataset)):
+            print('--------------------------- fold number {} -------------------------------'.format(fold))
+            train_subsampler = SubsetRandomSampler(train_idx)
+            test_subsampler = SubsetRandomSampler(test_idx)
+
+            train_dataloader = DataLoader(dataset, batch_size=batch_size, sampler=train_subsampler, num_workers=4)
+            test_dataloader = DataLoader(dataset, batch_size=batch_size, sampler=test_subsampler, num_workers=4)
+
+            if modelType == 'resnet':
+                model = nw.ResNet18(in_channels=3, labelNum=100)
+            elif modelType == 'm1':
+                model = nw.Model_1(in_channels=3, labelNum=100)
+            elif modelType == 'm2':
+                model = nw.Model_2(in_channels=3, labelNum=100)
+            else:
+                raise ValueError       
+
+            one_fold_loss = []
+            optim = torch.optim.Adam(model.parameters(), lr=lr)
+            loss_func = nn.CrossEntropyLoss()
+            model.to(device)
+
+            for epoch in range(1, max_epoch + 1):
+                train_loss = 0
+                test_loss = 0
+                for i, (x,y) in enumerate(tqdm(train_dataloader)):
+                    model.train()
+                    x, y = x.to(device), y.to(device)
+                    optim.zero_grad()
+                    pred = model(x)
+
+                    loss = loss_func(pred, y)
+                    train_loss += loss.item()
+
+                    loss.backward()
+                    optim.step()
+
+                    x.detach()
+                    y.detach()
+                    pred.detach()
+
+                train_loss = train_loss / len(train_dataloader)
+
+                for i, (x,y) in enumerate(tqdm(test_dataloader)):
+                    model.eval()
+                    x, y = x.to(device), y.to(device)
+                    pred = model(x)
+                    loss = loss_func(pred, y)
+                    test_loss += loss.item()
+
+                    x.detach()
+                    y.detach()
+                    pred.detach()
+                
+                one_fold_loss.append(test_loss)
+
+            model.cpu()
+            one_fold_loss = np.array(one_fold_loss)/len(test_dataloader)
+            # print(one_fold_loss)
+            loss_by_epoch += one_fold_loss
+        
+        loss_by_epoch = loss_by_epoch/n_split
+        np.save(save_dir+'cv_loss_epoch_lr_'+str(lr)+'.npy', loss_by_epoch)
+    return loss_by_epoch
 
 
 if __name__ == '__main__':
