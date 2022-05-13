@@ -292,7 +292,7 @@ def cross_validation2(dataset, device, max_epoch, batch_size, lr_list, n_split=3
 
 if __name__ == '__main__':
 
-    DATASET_DIR = '/home/dhlee/Research/data/kcar_preprocessed/kcar'
+    DATASET_DIR = 'path/kcar_preprocessed/kcar'
     BATCH_SIZE = 16
     LEARNING_RATE = 0.01
     EPOCH = 10
