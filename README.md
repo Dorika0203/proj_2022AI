@@ -1,4 +1,5 @@
 # proj_2022AI
+## Analyisis and Improving car image classifier using neural ODE
 SKKU 2022 Artificial Intelligence Project Team 15
 [![——————————————————————————](https://raw.githubusercontent.com/andreasbm/readme/master/assets/lines/colored.png)](#license)
 
