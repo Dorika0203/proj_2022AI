@@ -77,13 +77,13 @@ def split_dataset(dataset, ratio=(4,1)):
     # test = Subset(dataset, testIdx)
 
     # return train, test
-    
+
     sum = ratio[0] + ratio[1]
     test_ratio = ratio[1] / sum
     targets = np.array(dataset.targets)
-    trainIdx, testIdx = train_test_split(np.arange(targets.shape[0]), test_size = test_ratio, stratify=targets)
-    train = Subset(dataset, indices = trainIdx)
-    test = Subset(dataset, indices = testIdx)
+    trainIdx, testIdx = train_test_split(np.arange(targets.shape[0]), test_size=test_ratio, stratify=targets)
+    train = Subset(dataset, indices=trainIdx)
+    test = Subset(dataset, indices=testIdx)
 
     return train, test
 
