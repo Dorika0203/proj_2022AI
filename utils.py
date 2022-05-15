@@ -70,11 +70,20 @@ def get_dataset(root_dir):
     return dataset
 
 def split_dataset(dataset, ratio=(4,1)):
+    # sum = ratio[0] + ratio[1]
+    # test_ratio = ratio[1] / sum
+    # trainIdx, testIdx = train_test_split(dataset.targets, test_ratio, random_state=42, stratify=dataset.targets)
+    # train = Subset(dataset, trainIdx)
+    # test = Subset(dataset, testIdx)
+
+    # return train, test
+    
     sum = ratio[0] + ratio[1]
     test_ratio = ratio[1] / sum
-    trainIdx, testIdx = train_test_split(dataset.targets, test_ratio, random_state=42, stratify=dataset.targets)
-    train = Subset(dataset, trainIdx)
-    test = Subset(dataset, testIdx)
+    targets = np.array(dataset.targets)
+    trainIdx, testIdx = train_test_split(np.arange(targets.shape[0]), test_size = test_ratio, stratify=targets)
+    train = Subset(dataset, indices = trainIdx)
+    test = Subset(dataset, indices = testIdx)
 
     return train, test
 
