@@ -85,7 +85,7 @@ def split_dataset(dataset, ratio=(4,1)):
     train = Subset(dataset, indices=trainIdx)
     test = Subset(dataset, indices=testIdx)
 
-    return train, test
+    return train, test, trainIdx, testIdx
 
 
 def visualize_filter(tensor, ch=0, allkernels=False, nrow=8, padding=1): 

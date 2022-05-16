@@ -89,7 +89,9 @@ def train_1(dataset, device, max_epoch, batch_size, lr, modelType='resnet', save
     train_loss_arr = []
     test_loss_arr = []
     test_acc_arr = []
-    train_dataset, test_dataset = utils.split_dataset(dataset, (4,1))
+    train_dataset, test_dataset, trainIdx, testIdx = utils.split_dataset(dataset, (4,1))
+    np.save(file=save_dir+f'idx_train.npy', arr=np.array(trainIdx), allow_pickle=True)
+    np.save(file=save_dir+f'idx_test.npy', arr=np.array(testIdx), allow_pickle=True)
 
     train_dataloader = DataLoader(train_dataset, batch_size=batch_size, num_workers=4)
     test_dataloader = DataLoader(test_dataset, batch_size=batch_size,  num_workers=4)
@@ -184,7 +186,7 @@ def train_2(dataset, device, max_epoch, batch_size, lr, modelList=['resnet'], sa
     test_loss_arr = []
     test_acc_arr = []
     f1_score_arr = []
-    train_dataset, test_dataset = utils.split_dataset(dataset, (4,1))
+    train_dataset, test_dataset, trainIdx, testIdx = utils.split_dataset(dataset, (4,1))
 
     train_dataloader=DataLoader(train_dataset, batch_size=batch_size, num_workers=4)
     test_dataloader=DataLoader(test_dataset, batch_size=batch_size, num_workers=4)
@@ -446,8 +448,8 @@ def cross_validation2(dataset, device, max_epoch, batch_size, lr_list, n_split=3
 
 if __name__ == '__main__':
 
-    DATASET_DIR = 'C:/Users/nonam/OneDrive/문서/Github/proj_2022AI/kcar_preprocessed/kcar_preprocessed/kcar'
-    #DATASET_DIR = 'D:/dataset_car/kcar_preprocessed/kcar'
+    # DATASET_DIR = 'C:/Users/nonam/OneDrive/문서/Github/proj_2022AI/kcar_preprocessed/kcar_preprocessed/kcar'
+    DATASET_DIR = 'D:/dataset_car/kcar_preprocessed/kcar'
     BATCH_SIZE = 16
     LEARNING_RATE = 0.001
     EPOCH = 10
@@ -468,31 +470,31 @@ if __name__ == '__main__':
     Training
     """
 
-    # Train2
-    EPOCH = 5
-    BATCH_SIZE=16
-    LEARNING_RATE=0.001
-    SAVE_DIR = './result/'
-    MODEL_LIST = ['resnet', 'm1', 'm2']
-    d_total = utils.get_dataset(DATASET_DIR)
-    print(d_total)
-    if not os.path.isdir(SAVE_DIR):
-        os.mkdir(SAVE_DIR)
+    # # Train2
+    # EPOCH = 5
+    # BATCH_SIZE=16
+    # LEARNING_RATE=0.001
+    # SAVE_DIR = './result/'
+    # MODEL_LIST = ['resnet', 'm1', 'm2']
+    # d_total = utils.get_dataset(DATASET_DIR)
+    # print(d_total)
+    # if not os.path.isdir(SAVE_DIR):
+    #     os.mkdir(SAVE_DIR)
 
 
-    for _model in MODEL_LIST:
-        if not os.path.isdir(SAVE_DIR+_model):
-            os.mkdir(SAVE_DIR+_model)
+    # for _model in MODEL_LIST:
+    #     if not os.path.isdir(SAVE_DIR+_model):
+    #         os.mkdir(SAVE_DIR+_model)
 
-    train_loss_arr, test_loss_arr, test_acc_arr, f1_score_arr = train_2(
-        dataset=d_total,
-        device=device,
-        max_epoch=EPOCH,
-        batch_size=BATCH_SIZE,
-        lr=LEARNING_RATE,
-        modelList=MODEL_LIST,
-        save_dir=SAVE_DIR
-    )
+    # train_loss_arr, test_loss_arr, test_acc_arr, f1_score_arr = train_2(
+    #     dataset=d_total,
+    #     device=device,
+    #     max_epoch=EPOCH,
+    #     batch_size=BATCH_SIZE,
+    #     lr=LEARNING_RATE,
+    #     modelList=MODEL_LIST,
+    #     save_dir=SAVE_DIR
+    # )
 
 
 
@@ -500,6 +502,25 @@ if __name__ == '__main__':
 
     #Train1
 
+    # RESNET
+    EPOCH = 1
+    BATCH_SIZE=16
+    LEARNING_RATE=0.001
+    SAVE_DIR = './result/test/'
+    d_total = utils.get_dataset(DATASET_DIR)
+    print(d_total)
+    if not os.path.isdir(SAVE_DIR):
+        os.mkdir(SAVE_DIR)
+
+    last_model, train_loss_arr, test_loss_arr, test_acc_arr = train_1(
+        dataset=d_total,
+        device=device,
+        max_epoch=EPOCH,
+        batch_size=BATCH_SIZE,
+        lr=LEARNING_RATE,
+        modelType='resnet',
+        save_dir=SAVE_DIR
+    )
 
 
     # # RESNET
@@ -533,7 +554,7 @@ if __name__ == '__main__':
     # if not os.path.isdir(SAVE_DIR):
     #     os.mkdir(SAVE_DIR)
 
-    # last_model, train_loss_arr, test_loss_arr, test_acc_arr = train(
+    # last_model, train_loss_arr, test_loss_arr, test_acc_arr = train_1(
     #     dataset=d_total,
     #     device=device,
     #     max_epoch=EPOCH,
@@ -554,7 +575,7 @@ if __name__ == '__main__':
     # if not os.path.isdir(SAVE_DIR):
     #     os.mkdir(SAVE_DIR)
 
-    # last_model, train_loss_arr, test_loss_arr, test_acc_arr = train(
+    # last_model, train_loss_arr, test_loss_arr, test_acc_arr = train_1(
     #     dataset=d_total,
     #     device=device,
     #     max_epoch=EPOCH,
