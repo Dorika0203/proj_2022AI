@@ -1,3 +1,4 @@
+from cProfile import label
 import sklearn
 import utils as utils
 import network as nw
@@ -9,27 +10,76 @@ from sklearn.model_selection import KFold
 from sklearn.metrics import f1_score
 import numpy as np
 import os
+import collections
 
 
-def prediction(dataset, model, device, batch_size):
+def prediction_with_fscore(dataset, model, device, batch_size, num_classes=100):
+
     model.to(device)
     dataloader = DataLoader(dataset, batch_size=batch_size, num_workers=4)
-    pred_list = []
+
+    TP = np.zeros(num_classes)
+    FP = np.zeros(num_classes)
+    TN = np.zeros(num_classes)
+    FN = np.zeros(num_classes)
+
+    label_list = []
+    prediction_list = []
+
     for i, (x,y) in enumerate(tqdm(dataloader)):
+        
         model.eval()
-        x, y = x.to(device), y.to(device)
+        x = x.to(device)
         pred = model(x)
-        pred_list.append(pred)
+
+        pred_label = torch.argmax(pred, dim=1)
+
+        x.detach()
+        y.detach()
+        pred = pred.detach()
+
+        label_list.append(y)
+        prediction_list.append(pred_label.cpu())
+
+    model.cpu()
+    labels = label_list[0]
+    preds = prediction_list[0]
+
+    print("LABEL ARR GENERATE.")
+    for i, t in enumerate(tqdm(label_list)):
+        if i == 0: continue
+        labels = torch.cat((labels, t), 0)
+
+    print("PRED ARR GENERATE.")
+    for i, t in enumerate(tqdm(prediction_list)):
+        if i == 0: continue
+        preds = torch.cat((preds, t), 0)
     
-    ret_pred = None
-    for pred in pred_list:
-        if ret_pred is None:
-            ret_pred = pred
+    labels = labels.numpy()
+    preds = preds.numpy()
+    
+    num_points = labels.shape[0]
+    print('number of points: ', num_points)
+
+    for i in range(num_points):
+        if labels[i] == preds[i]:
+            TP[preds[i]] += 1
+            TN += 1
+            TN[preds[i]] -= 1
         else:
-            ret_pred = torch.cat(ret_pred, pred)
+            FP[preds[i]] += 1
+            FN[labels[i]] += 1
+            TN += 1
+            TN[preds[i]] -= 1
+            TN[labels[i]] -= 1
+    
 
-    return ret_pred
+    RECALL = TP/(TP+FN)
+    PRECISION = TP/(TP+FP)
 
+    F1 = 2*(PRECISION*RECALL)/(PRECISION+RECALL)
+
+    return F1
 
 
 
@@ -39,7 +89,9 @@ def train_1(dataset, device, max_epoch, batch_size, lr, modelType='resnet', save
     train_loss_arr = []
     test_loss_arr = []
     test_acc_arr = []
-    train_dataset, test_dataset = utils.split_dataset(dataset, (4,1))
+    train_dataset, test_dataset, trainIdx, testIdx = utils.split_dataset(dataset, (4,1))
+    np.save(file=save_dir+f'idx_train.npy', arr=np.array(trainIdx), allow_pickle=True)
+    np.save(file=save_dir+f'idx_test.npy', arr=np.array(testIdx), allow_pickle=True)
 
     train_dataloader = DataLoader(train_dataset, batch_size=batch_size, num_workers=4)
     test_dataloader = DataLoader(test_dataset, batch_size=batch_size,  num_workers=4)
@@ -117,6 +169,8 @@ def train_1(dataset, device, max_epoch, batch_size, lr, modelType='resnet', save
     return model, train_loss_arr, test_loss_arr, test_acc_arr
 
 
+
+
 """
 [return value]
 - train_loss_arr: same as train()
@@ -132,7 +186,7 @@ def train_2(dataset, device, max_epoch, batch_size, lr, modelList=['resnet'], sa
     test_loss_arr = []
     test_acc_arr = []
     f1_score_arr = []
-    train_dataset, test_dataset = utils.split_dataset(dataset, (4,1))
+    train_dataset, test_dataset, trainIdx, testIdx = utils.split_dataset(dataset, (4,1))
 
     train_dataloader=DataLoader(train_dataset, batch_size=batch_size, num_workers=4)
     test_dataloader=DataLoader(test_dataset, batch_size=batch_size, num_workers=4)
@@ -222,6 +276,8 @@ def train_2(dataset, device, max_epoch, batch_size, lr, modelList=['resnet'], sa
 
 
 
+
+
 def cross_validation(dataset, device, max_epoch, batch_size, lr, n_split=3, modelType='resnet', save_dir='./result/'):
 
     # TRAINING WITH K_FOLD VALIDATION.
@@ -292,6 +348,9 @@ def cross_validation(dataset, device, max_epoch, batch_size, lr, n_split=3, mode
     loss_by_epoch = loss_by_epoch/n_split
     np.save(save_dir+'cv_loss_epoch.npy', loss_by_epoch)
     return loss_by_epoch
+
+
+
 
 
 """
@@ -383,10 +442,14 @@ def cross_validation2(dataset, device, max_epoch, batch_size, lr_list, n_split=3
     return loss_by_epoch
 
 
+
+
+
+
 if __name__ == '__main__':
 
-    DATASET_DIR = 'C:/Users/nonam/OneDrive/문서/Github/proj_2022AI/kcar_preprocessed/kcar_preprocessed/kcar'
-    #DATASET_DIR = 'D:/dataset_car/kcar_preprocessed/kcar'
+    # DATASET_DIR = 'C:/Users/nonam/OneDrive/문서/Github/proj_2022AI/kcar_preprocessed/kcar_preprocessed/kcar'
+    DATASET_DIR = 'D:/dataset_car/kcar_preprocessed/kcar'
     BATCH_SIZE = 16
     LEARNING_RATE = 0.001
     EPOCH = 10
@@ -407,31 +470,31 @@ if __name__ == '__main__':
     Training
     """
 
-    # Train2
-    EPOCH = 5
-    BATCH_SIZE=16
-    LEARNING_RATE=0.001
-    SAVE_DIR = './result/'
-    MODEL_LIST = ['resnet', 'm1', 'm2']
-    d_total = utils.get_dataset(DATASET_DIR)
-    print(d_total)
-    if not os.path.isdir(SAVE_DIR):
-        os.mkdir(SAVE_DIR)
+    # # Train2
+    # EPOCH = 5
+    # BATCH_SIZE=16
+    # LEARNING_RATE=0.001
+    # SAVE_DIR = './result/'
+    # MODEL_LIST = ['resnet', 'm1', 'm2']
+    # d_total = utils.get_dataset(DATASET_DIR)
+    # print(d_total)
+    # if not os.path.isdir(SAVE_DIR):
+    #     os.mkdir(SAVE_DIR)
 
 
-    for _model in MODEL_LIST:
-        if not os.path.isdir(SAVE_DIR+_model):
-            os.mkdir(SAVE_DIR+_model)
+    # for _model in MODEL_LIST:
+    #     if not os.path.isdir(SAVE_DIR+_model):
+    #         os.mkdir(SAVE_DIR+_model)
 
-    train_loss_arr, test_loss_arr, test_acc_arr, f1_score_arr = train_2(
-        dataset=d_total,
-        device=device,
-        max_epoch=EPOCH,
-        batch_size=BATCH_SIZE,
-        lr=LEARNING_RATE,
-        modelList=MODEL_LIST,
-        save_dir=SAVE_DIR
-    )
+    # train_loss_arr, test_loss_arr, test_acc_arr, f1_score_arr = train_2(
+    #     dataset=d_total,
+    #     device=device,
+    #     max_epoch=EPOCH,
+    #     batch_size=BATCH_SIZE,
+    #     lr=LEARNING_RATE,
+    #     modelList=MODEL_LIST,
+    #     save_dir=SAVE_DIR
+    # )
 
 
 
@@ -439,6 +502,25 @@ if __name__ == '__main__':
 
     #Train1
 
+    # RESNET
+    EPOCH = 1
+    BATCH_SIZE=16
+    LEARNING_RATE=0.001
+    SAVE_DIR = './result/test/'
+    d_total = utils.get_dataset(DATASET_DIR)
+    print(d_total)
+    if not os.path.isdir(SAVE_DIR):
+        os.mkdir(SAVE_DIR)
+
+    last_model, train_loss_arr, test_loss_arr, test_acc_arr = train_1(
+        dataset=d_total,
+        device=device,
+        max_epoch=EPOCH,
+        batch_size=BATCH_SIZE,
+        lr=LEARNING_RATE,
+        modelType='resnet',
+        save_dir=SAVE_DIR
+    )
 
 
     # # RESNET
@@ -472,7 +554,7 @@ if __name__ == '__main__':
     # if not os.path.isdir(SAVE_DIR):
     #     os.mkdir(SAVE_DIR)
 
-    # last_model, train_loss_arr, test_loss_arr, test_acc_arr = train(
+    # last_model, train_loss_arr, test_loss_arr, test_acc_arr = train_1(
     #     dataset=d_total,
     #     device=device,
     #     max_epoch=EPOCH,
@@ -493,7 +575,7 @@ if __name__ == '__main__':
     # if not os.path.isdir(SAVE_DIR):
     #     os.mkdir(SAVE_DIR)
 
-    # last_model, train_loss_arr, test_loss_arr, test_acc_arr = train(
+    # last_model, train_loss_arr, test_loss_arr, test_acc_arr = train_1(
     #     dataset=d_total,
     #     device=device,
     #     max_epoch=EPOCH,

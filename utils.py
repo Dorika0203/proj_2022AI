@@ -70,6 +70,14 @@ def get_dataset(root_dir):
     return dataset
 
 def split_dataset(dataset, ratio=(4,1)):
+    # sum = ratio[0] + ratio[1]
+    # test_ratio = ratio[1] / sum
+    # trainIdx, testIdx = train_test_split(dataset.targets, test_ratio, random_state=42, stratify=dataset.targets)
+    # train = Subset(dataset, trainIdx)
+    # test = Subset(dataset, testIdx)
+
+    # return train, test
+
     sum = ratio[0] + ratio[1]
     test_ratio = ratio[1] / sum
     targets = np.array(dataset.targets)
@@ -77,7 +85,7 @@ def split_dataset(dataset, ratio=(4,1)):
     train = Subset(dataset, indices=trainIdx)
     test = Subset(dataset, indices=testIdx)
 
-    return train, test
+    return train, test, trainIdx, testIdx
 
 
 def visualize_filter(tensor, ch=0, allkernels=False, nrow=8, padding=1): 
