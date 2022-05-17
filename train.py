@@ -503,10 +503,10 @@ if __name__ == '__main__':
     #Train1
 
     # RESNET
-    EPOCH = 1
+    EPOCH = 50
     BATCH_SIZE=16
     LEARNING_RATE=0.001
-    SAVE_DIR = './result/test/'
+    SAVE_DIR = './result/resnet-2/'
     d_total = utils.get_dataset(DATASET_DIR)
     print(d_total)
     if not os.path.isdir(SAVE_DIR):
@@ -523,67 +523,45 @@ if __name__ == '__main__':
     )
 
 
-    # # RESNET
-    # EPOCH = 50
-    # BATCH_SIZE=16
-    # LEARNING_RATE=0.001
-    # SAVE_DIR = './result/resnet/'
-    # d_total = utils.get_dataset(DATASET_DIR)
-    # print(d_total)
-    # if not os.path.isdir(SAVE_DIR):
-    #     os.mkdir(SAVE_DIR)
+    # MODEL1
+    EPOCH = 50
+    BATCH_SIZE=16
+    LEARNING_RATE=0.001
+    SAVE_DIR = './result/model_1-2/'
+    d_total = utils.get_dataset(DATASET_DIR)
 
-    # last_model, train_loss_arr, test_loss_arr, test_acc_arr = train_1(
-    #     dataset=d_total,
-    #     device=device,
-    #     max_epoch=EPOCH,
-    #     batch_size=BATCH_SIZE,
-    #     lr=LEARNING_RATE,
-    #     modelType='resnet',
-    #     save_dir=SAVE_DIR
-    # )
+    if not os.path.isdir(SAVE_DIR):
+        os.mkdir(SAVE_DIR)
 
-
-    # # MODEL1
-    # EPOCH = 50
-    # BATCH_SIZE=16
-    # LEARNING_RATE=0.001
-    # SAVE_DIR = './result/model_1/'
-    # d_total = utils.get_dataset(DATASET_DIR)
-
-    # if not os.path.isdir(SAVE_DIR):
-    #     os.mkdir(SAVE_DIR)
-
-    # last_model, train_loss_arr, test_loss_arr, test_acc_arr = train_1(
-    #     dataset=d_total,
-    #     device=device,
-    #     max_epoch=EPOCH,
-    #     batch_size=BATCH_SIZE,
-    #     lr=LEARNING_RATE,
-    #     modelType='m1',
-    #     save_dir=SAVE_DIR
-    # )
+    last_model, train_loss_arr, test_loss_arr, test_acc_arr = train_1(
+        dataset=d_total,
+        device=device,
+        max_epoch=EPOCH,
+        batch_size=BATCH_SIZE,
+        lr=LEARNING_RATE,
+        modelType='m1',
+        save_dir=SAVE_DIR
+    )
     
-    # # MODEL2
-    # EPOCH = 50
-    # BATCH_SIZE=16
-    # LEARNING_RATE=0.001
-    # SAVE_DIR = './result/model_2/'
-    # d_total = utils.get_dataset(DATASET_DIR)
-    # # _, d_total = utils.split_dataset(d_total, (49,1))
+    # MODEL2
+    EPOCH = 50
+    BATCH_SIZE=16
+    LEARNING_RATE=0.001
+    SAVE_DIR = './result/model_2-2/'
+    d_total = utils.get_dataset(DATASET_DIR)
 
-    # if not os.path.isdir(SAVE_DIR):
-    #     os.mkdir(SAVE_DIR)
+    if not os.path.isdir(SAVE_DIR):
+        os.mkdir(SAVE_DIR)
 
-    # last_model, train_loss_arr, test_loss_arr, test_acc_arr = train_1(
-    #     dataset=d_total,
-    #     device=device,
-    #     max_epoch=EPOCH,
-    #     batch_size=BATCH_SIZE,
-    #     lr=LEARNING_RATE,
-    #     modelType='m2',
-    #     save_dir=SAVE_DIR
-    # )
+    last_model, train_loss_arr, test_loss_arr, test_acc_arr = train_1(
+        dataset=d_total,
+        device=device,
+        max_epoch=EPOCH,
+        batch_size=BATCH_SIZE,
+        lr=LEARNING_RATE,
+        modelType='m2',
+        save_dir=SAVE_DIR
+    )
 
 
 
